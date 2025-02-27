@@ -1,0 +1,27 @@
+# Ignore Node.js related files and directories
+node_modules/
+seeder/
+uploads/
+Resources/
+npm-debug.log
+yarn-error.log
+
+# Ignore environment-specific files
+.env
+.env.local
+.env.*.local
+
+# Ignore build output
+dist/
+build/
+out/
+
+# Ignore logs
+*.log
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore any files or directories specific to your project
+# Add any custom entries below this line
