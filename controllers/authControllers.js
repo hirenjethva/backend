@@ -72,7 +72,6 @@ export const verifyEmail = catchAsyncErrors(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     // Redirect user to the login page
-    return res.redirect(`${process.env.FRONTEND_URL}/login?verified=true`);
 
     res.status(200).json({
       success: true,
