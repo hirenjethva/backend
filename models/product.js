@@ -54,25 +54,37 @@ const productSchema = new mongoose.Schema(
       L: { type: Number, default: 0 },
       XL: { type: Number, default: 0 },
     },
+    // sizeChart: [
+    //   {
+    //     size: { 
+    //       type: String, 
+    //       required: [true, "Please enter size"], 
+    //       enum: { 
+    //         values: [
+    //           "XS",
+    //           "S",
+    //           "M",
+    //           "L",
+    //           "XL"
+    //         ], 
+    //         message: "Please select correct Size"
+    //       }, 
+    //     },
+    //     chest: { type: String },
+    //     shoulder: { type: String },
+    //     length: { type: String },
+    //   },
+    // ],
     sizeChart: [
       {
         size: { 
           type: String, 
-          required: [true, "Please enter size"], 
-          enum: { 
-            values: [
-              "XS",
-              "S",
-              "M",
-              "L",
-              "XL"
-            ], 
-            message: "Please select correct Size"
-          }, 
+          required: [true, "Please enter size"]
         },
-        chest: { type: String },
-        shoulder: { type: String },
-        length: { type: String },
+        attributes: {
+          type: Map, 
+          of: String, // Key-value pairs for attributes
+        },
       },
     ],
     numOfReviews: {
