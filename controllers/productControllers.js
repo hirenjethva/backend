@@ -5,10 +5,32 @@ import APIFilters from "../utils/apiFilters.js";
 import ErrorHandler from "../utils/errorHandler.js";
 import { delete_file, upload_file } from "../utils/cloudinary.js";
 
-// Create new Product   =>  /api/v1/products
+// Get all Products   =>  /api/v1/products
 export const getProducts = catchAsyncErrors(async (req, res, next) => {
   const resPerPage = 4;
   const apiFilters = new APIFilters(Product, req.query).search().filters();
+
+  let products = await apiFilters.query;
+  let filteredProductsCount = products.length;
+
+  apiFilters.pagination(resPerPage);
+  products = await apiFilters.query.clone();
+
+  res.status(200).json({
+    resPerPage,
+    filteredProductsCount,
+    products,
+  });
+});
+
+// Get all featured Products   =>  /api/v1/products?isFeatured=true
+export const getFeaturedProducts = catchAsyncErrors(async (req, res, next) => {
+  const resPerPage = 4;
+  const apiFilters = new APIFilters(Product, req.query).search().filters();
+
+  if (req.query.isFeatured === "true") {
+    apiFilters.query = apiFilters.query.find({ isFeatured: true });
+  }
 
   let products = await apiFilters.query;
   let filteredProductsCount = products.length;

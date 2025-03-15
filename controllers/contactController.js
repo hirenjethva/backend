@@ -26,3 +26,11 @@ export const createContact = catchAsyncErrors(async (req, res, next) => {
     contact,
   });
 });
+
+export const getContactUsData = catchAsyncErrors(async (req, res, next) => {
+  const contactUs = await Contact.find();
+
+  res.status(200).json({
+    contactUs,
+  });
+});

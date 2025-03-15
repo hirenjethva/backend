@@ -9,6 +9,7 @@ import {
   getProductDetails,
   getProductReviews,
   getProducts,
+  getFeaturedProducts,
   newProduct,
   updateProduct,
   uploadProductImages,
@@ -18,6 +19,9 @@ import { upload } from "../middlewares/multerProducts.js";
 const router = express.Router();
 
 router.route("/products").get(getProducts);
+
+router.route("/products/products?isFeatured=true").get(getFeaturedProducts);
+
 router
   .route("/admin/products")
   .post(isAuthenticatedUser, authorizeRoles("admin"), newProduct)

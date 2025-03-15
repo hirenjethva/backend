@@ -68,6 +68,61 @@ export const allOrders = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Update Order - ADMIN  =>  /api/v1/admin/orders/:id
+// export const updateOrder = catchAsyncErrors(async (req, res, next) => {
+//   const order = await Order.findById(req.params.id);
+
+//   if (!order) {
+//     return next(new ErrorHandler("No Order found with this ID", 404));
+//   }
+
+//   if (order?.orderStatus === "Delivered") {
+//     return next(new ErrorHandler("You have already delivered this order", 400));
+//   }
+
+//   let productNotFound = false;
+
+//   // Update products stock
+//   for (const item of order.orderItems) {
+//     const product = await Product.findById(item?.product?.toString());
+//     if (!product) {
+//       productNotFound = true;
+//       break;
+//     }
+  
+//     // Ensure the size exists in the stock object
+//     if (!product.stock[item.size]) {
+//       throw new Error(`Size ${item.size} not available for product ${product.name}`);
+//     }
+  
+//     // Deduct the quantity from the specified size
+//     product.stock[item.size] = product.stock[item.size] - item.quantity;
+  
+//     // Validate if stock goes below zero
+//     if (product.stock[item.size] < 0) {
+//       throw new Error(
+//         `Insufficient stock for size ${item.size} of product ${product.name}`
+//       );
+//     }
+  
+//     await product.save({ validateBeforeSave: false });
+//   }
+  
+
+//   if (productNotFound) {
+//     return next(
+//       new ErrorHandler("No Product found with one or more IDs.", 404)
+//     );
+//   }
+
+//   order.orderStatus = req.body.status;
+//   order.deliveredAt = Date.now();
+
+//   await order.save();
+
+//   res.status(200).json({
+//     success: true,
+//   });
+// });
 export const updateOrder = catchAsyncErrors(async (req, res, next) => {
   const order = await Order.findById(req.params.id);
 
@@ -81,41 +136,49 @@ export const updateOrder = catchAsyncErrors(async (req, res, next) => {
 
   let productNotFound = false;
 
-  // Update products stock
-  for (const item of order.orderItems) {
-    const product = await Product.findById(item?.product?.toString());
-    if (!product) {
-      productNotFound = true;
-      break;
-    }
-  
-    // Ensure the size exists in the stock object
-    if (!product.stock[item.size]) {
-      throw new Error(`Size ${item.size} not available for product ${product.name}`);
-    }
-  
-    // Deduct the quantity from the specified size
-    product.stock[item.size] = product.stock[item.size] - item.quantity;
-  
-    // Validate if stock goes below zero
-    if (product.stock[item.size] < 0) {
-      throw new Error(
-        `Insufficient stock for size ${item.size} of product ${product.name}`
-      );
-    }
-  
-    await product.save({ validateBeforeSave: false });
-  }
-  
+  if (req.body.status === "Delivered") {
+    // Reduce stock if order is being marked as Delivered
+    for (const item of order.orderItems) {
+      const product = await Product.findById(item?.product?.toString());
+      if (!product) {
+        productNotFound = true;
+        break;
+      }
 
-  if (productNotFound) {
-    return next(
-      new ErrorHandler("No Product found with one or more IDs.", 404)
-    );
+      // Ensure size exists in stock
+      if (!Object.keys(product.stock).includes(item.size)) {
+        return next(new ErrorHandler(`Invalid size '${item.size}' for product '${product.name}'.`, 400));
+      }
+
+      // Ensure stock doesn't go negative
+      if (product.stock[item.size] < item.quantity) {
+        return next(new ErrorHandler(
+          `Insufficient stock for size ${item.size} of product ${product.name}.`,
+          400
+        ));
+      }
+
+      // Deduct stock
+      product.stock[item.size] -= item.quantity;
+      await product.save({ validateBeforeSave: false });
+    }
+
+    if (productNotFound) {
+      return next(new ErrorHandler("No Product found with one or more IDs.", 404));
+    }
+  } else if (req.body.status === "Cancelled") {
+    // Restore stock if order is being cancelled
+    for (const item of order.orderItems) {
+      const product = await Product.findById(item?.product?.toString());
+      if (product) {
+        product.stock[item.size] += item.quantity;
+        await product.save({ validateBeforeSave: false });
+      }
+    }
   }
 
   order.orderStatus = req.body.status;
-  order.deliveredAt = Date.now();
+  order.deliveredAt = req.body.status === "Delivered" ? Date.now() : null;
 
   await order.save();
 
@@ -123,6 +186,7 @@ export const updateOrder = catchAsyncErrors(async (req, res, next) => {
     success: true,
   });
 });
+
 
 // Delete order  =>  /api/v1/admin/orders/:id
 export const deleteOrder = catchAsyncErrors(async (req, res, next) => {
