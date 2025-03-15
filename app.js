@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { connectDatabase } from "./config/dbConnect.js";
 import errorMiddleware from "./middlewares/errors.js";
+import cors from 'cors';
 
 import path from "path";
 // import { fileURLToPath } from "url";
@@ -23,6 +24,15 @@ if (process.env.NODE_ENV !== "PRODUCTION") {
 
 // Connecting to database
 connectDatabase();
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "*",
+    credentials: true, 
+    methods: ["GET", "POST", "PUT", "DELETE"], 
+  })
+);
+
 
 app.use(
   express.json({
