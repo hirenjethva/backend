@@ -12,10 +12,9 @@ const productSchema = new mongoose.Schema(
       required: [true, "Please enter product price"],
       maxLength: [5, "Product price cannot exceed 5 digits"],
     },
-    description: {
-      type: String,
-      required: [true, "Please enter product description"],
-    },
+    description: [{
+      type: String
+    }],
     ratings: {
       type: Number,
       default: 0,
@@ -53,21 +52,21 @@ const productSchema = new mongoose.Schema(
       M: { type: Number, default: 0 },
       L: { type: Number, default: 0 },
       XL: { type: Number, default: 0 },
-      XXL: { type: Number, default:0 }
+      XXL: { type: Number, default: 0 }
     },
     sizeChart: [
       {
-        size: { 
-          type: String, 
+        size: {
+          type: String,
           required: [true, "Please enter size"]
         },
         attributes: {
-          type: Map, 
+          type: Map,
           of: String, // Key-value pairs for attributes
         },
       },
     ],
-    isFeatured : { type: Boolean, default: false },
+    isFeatured: { type: Boolean, default: false },
     numOfReviews: {
       type: Number,
       default: 0,
